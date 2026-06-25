@@ -11,9 +11,8 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Jellyfin
-RUN mkdir -p /etc/apt/keyrings && \
-    curl -fsSL https://repo.jellyfin.org/jellyfin_team.gpg.key | gpg --dearmor -o /etc/apt/keyrings/jellyfin-keyring.gpg && \
-    echo "deb [signed-by=/etc/apt/keyrings/jellyfin-keyring.gpg] https://repo.jellyfin.org/debian bookworm main" > /etc/apt/sources.list.d/jellyfin.sources && \
+RUN curl -fsSL https://repo.jellyfin.org/jellyfin_team.gpg.key | gpg --dearmor -o /usr/share/keyrings/jellyfin-keyring.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/jellyfin-keyring.gpg] https://repo.jellyfin.org/debian bookworm main" | tee /etc/apt/sources.list.d/jellyfin.list && \
     apt-get update && apt-get install -y jellyfin && \
     rm -rf /var/lib/apt/lists/*
 
