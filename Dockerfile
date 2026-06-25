@@ -33,6 +33,7 @@ set -e
 # Initialize filebrowser database if it doesn't exist
 if [ ! -f /data/config/filebrowser.db ]; then
     echo "Initializing File Browser database..."
+    /usr/local/bin/filebrowser config init -d /data/config/filebrowser.db
     /usr/local/bin/filebrowser -d /data/config/filebrowser.db users add admin admin --perm.admin
 fi
 
