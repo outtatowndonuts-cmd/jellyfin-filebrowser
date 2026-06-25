@@ -18,8 +18,7 @@ RUN mkdir -p /etc/apt/keyrings && \
     rm -rf /var/lib/apt/lists/*
 
 # Install File Browser
-RUN curl -fsSL https://raw.githubusercontent.com/filebrowser/get/master/get.sh | bash && \
-    mv /root/filebrowser /usr/local/bin/filebrowser
+RUN curl -fsSL https://raw.githubusercontent.com/filebrowser/get/master/get.sh | bash
 
 # Create directories
 RUN mkdir -p /media /config /cache && \
