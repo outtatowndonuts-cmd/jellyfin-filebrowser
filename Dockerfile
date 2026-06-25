@@ -39,7 +39,8 @@ fi
 # Start supervisor
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/services.conf
 EOF
-chmod +x /entrypoint.sh
+
+RUN chmod +x /entrypoint.sh
 
 # Create Supervisor config
 RUN cat > /etc/supervisor/conf.d/services.conf << 'EOF'
