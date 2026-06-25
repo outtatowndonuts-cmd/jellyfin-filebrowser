@@ -25,6 +25,22 @@ RUN mkdir -p /data/media /data/config /data/cache && \
     chown -R jellyfin:jellyfin /data && \
     chmod -R 755 /data
 
+# Create entrypoint script to initialize filebrowser on first run
+RUN cat > /entrypoint.sh << 'EOF'
+#!/bin/bash
+set -e
+
+# Initialize filebrowser database if it doesn't exist
+if [ ! -f /data/config/filebrowser.db ]; then
+    echo "Initializing File Browser database..."
+    /usr/local/bin/filebrowser -d /data/config/filebrowser.db users add admin admin --perm.admin
+fi
+
+# Start supervisor
+exec /usr/bin/supervisord -c /etc/supervisor/conf.d/services.conf
+EOF
+chmod +x /entrypoint.sh
+
 # Create Supervisor config
 RUN cat > /etc/supervisor/conf.d/services.conf << 'EOF'
 [supervisord]
@@ -57,6 +73,6 @@ EXPOSE 8096 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:8096/health || exit 1
 
-# Start Supervisor
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/services.conf"]
+# Start via entrypoint
+ENTRYPOINT ["/entrypoint.sh"]
 
