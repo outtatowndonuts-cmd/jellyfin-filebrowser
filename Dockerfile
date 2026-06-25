@@ -13,16 +13,19 @@ RUN apt-get update && apt-get install -y \
 # Install Jellyfin
 RUN mkdir -p /etc/apt/keyrings && \
     curl -fsSL https://repo.jellyfin.org/jellyfin_team.gpg.key | gpg --dearmor -o /etc/apt/keyrings/jellyfin-keyring.gpg && \
-    echo "deb [signed-by=/etc/apt/keyrings/jellyfin-keyring.gpg] https://repo.jellyfin.org/debian bookworm main" > /etc/apt/sources.list.d/jellyfin.list && \
+    echo "deb [signed-by=/etc/apt/keyrings/jellyfin-keyring.gpg] https://repo.jellyfin.org/debian bookworm main" > /etc/apt/sources.list.d/jellyfin.sources && \
     apt-get update && apt-get install -y jellyfin && \
     rm -rf /var/lib/apt/lists/*
 
 # Install File Browser
-RUN curl -fsSL https://raw.githubusercontent.com/filebrowser/get/master/get.sh | bash
+RUN curl -fsSL https://raw.githubusercontent.com/filebrowser/get/master/get.sh | bash && \
+    mv /root/filebrowser /usr/local/bin/filebrowser
 
-# Create directories
-RUN mkdir -p /media /config /cache && \
-    mkdir -p /var/log/supervisor
+# Create directories with proper permissions
+RUN mkdir -p /data/media /data/config /data/cache && \
+    mkdir -p /var/log/supervisor && \
+    chown -R jellyfin:jellyfin /data && \
+    chmod -R 755 /data
 
 # Create Supervisor config
 RUN cat > /etc/supervisor/conf.d/services.conf << 'EOF'
@@ -32,16 +35,16 @@ logfile=/var/log/supervisor/supervisord.log
 pidfile=/var/run/supervisord.pid
 
 [program:jellyfin]
-command=/usr/bin/jellyfin --datadir=/config --cachedir=/cache
+command=/usr/bin/jellyfin --datadir=/data/config --cachedir=/data/cache
 autostart=true
 autorestart=true
 stderr_logfile=/var/log/supervisor/jellyfin.err.log
 stdout_logfile=/var/log/supervisor/jellyfin.out.log
 user=jellyfin
-environment=JELLYFIN_DATA_DIR=/config,JELLYFIN_CACHE_DIR=/cache
+environment=JELLYFIN_DATA_DIR=/data/config,JELLYFIN_CACHE_DIR=/data/cache
 
 [program:filebrowser]
-command=/usr/local/bin/filebrowser --root /media --address 0.0.0.0 --port 8080 --database /config/filebrowser.db
+command=/usr/local/bin/filebrowser --root /data/media --address 0.0.0.0 --port 8080 --database /data/config/filebrowser.db
 autostart=true
 autorestart=true
 stderr_logfile=/var/log/supervisor/filebrowser.err.log
@@ -58,3 +61,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 
 # Start Supervisor
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/services.conf"]
+
