@@ -25,7 +25,7 @@ RUN mkdir -p /data/media /data/config /data/cache && \
     chown -R jellyfin:jellyfin /data && \
     chmod -R 755 /data
 
-# Create entrypoint script to initialize filebrowser on first run
+# Create entrypoint script
 RUN cat > /entrypoint.sh << 'EOF'
 #!/bin/bash
 set -e
@@ -34,7 +34,8 @@ set -e
 if [ ! -f /data/config/filebrowser.db ]; then
     echo "Initializing File Browser database..."
     /usr/local/bin/filebrowser config init -d /data/config/filebrowser.db
-    /usr/local/bin/filebrowser -d /data/config/filebrowser.db users add admin admin --perm.admin
+    /usr/local/bin/filebrowser config set -d /data/config/filebrowser.db -r /data/media
+    /usr/local/bin/filebrowser users add -d /data/config/filebrowser.db admin admin --perm.admin
 fi
 
 # Start supervisor
@@ -60,7 +61,7 @@ user=jellyfin
 environment=JELLYFIN_DATA_DIR=/data/config,JELLYFIN_CACHE_DIR=/data/cache
 
 [program:filebrowser]
-command=/usr/local/bin/filebrowser --root /data/media --address 0.0.0.0 --port 8080 --database /data/config/filebrowser.db
+command=/usr/local/bin/filebrowser -d /data/config/filebrowser.db
 autostart=true
 autorestart=true
 stderr_logfile=/var/log/supervisor/filebrowser.err.log
