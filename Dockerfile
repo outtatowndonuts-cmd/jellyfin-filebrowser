@@ -17,8 +17,7 @@ RUN curl -fsSL https://repo.jellyfin.org/jellyfin_team.gpg.key | gpg --dearmor -
     rm -rf /var/lib/apt/lists/*
 
 # Install File Browser
-RUN curl -fsSL https://raw.githubusercontent.com/filebrowser/get/master/get.sh | bash && \
-    mv /root/filebrowser /usr/local/bin/filebrowser
+RUN curl -fsSL https://raw.githubusercontent.com/filebrowser/get/master/get.sh | bash
 
 # Create directories with proper permissions
 RUN mkdir -p /data/media /data/config /data/cache && \
